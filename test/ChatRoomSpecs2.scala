@@ -41,7 +41,7 @@ class ChatRoomSpecs2 extends Specification {
       ChatRoom.createTables
       fn
     } finally {
-      ChatRoom.downcast
+      ChatRoom.dropTables
     }
 
   }
