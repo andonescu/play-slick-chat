@@ -79,7 +79,7 @@ object ChatController extends Controller with AuthHelpers {
    * http://www.playframework.com/documentation/2.1.0/ScalaJsonCombinators
    * http://mandubian.com/2012/09/08/unveiling-play-2-dot-1-json-api-part1-jspath-reads-combinators/
    */
-  val validateMessage: Reads[String] = (JsPath \ "message").read[String]
+  val validateMessage: Reads[String] = (JsPath \ "message").read[String](minLength[String](1) )
 
 
   def handleRequest(request: Request[AnyContent]): SimpleResult = {
