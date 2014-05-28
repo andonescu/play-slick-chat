@@ -4,6 +4,10 @@ import play.api._
 import response.ResponseForm
 import response.ResponseFormError
 import play.api.libs.json._
+import play.api.libs.json.JsPath
+
+import play.api.data.validation.Constraints._
+
 import play.api.mvc._
 
 import models._
@@ -70,12 +74,21 @@ object ChatController extends Controller {
       }
   }
 
+
+  /**
+   * http://www.playframework.com/documentation/2.1.0/ScalaJsonCombinators
+   */
+  val validateMessage: Reads[String] = (JsPath \ "message").read[String]
+
+
   def handleRequest(request: Request[AnyContent]): SimpleResult = {
     val json = request.body.asJson.getOrElse(JsNull)
 
-    val errors = (json \ "message").validate[String].fold(
+    val errors = validateMessage.reads(json).fold(
       invalid = { errors =>
-        List(ResponseFormError("message", " no message is found here"))
+
+        errors.map(error => error._2.map(errorMessage => new ResponseFormError(error._1.path.map(_.toString).mkString(""), errorMessage.message)))
+
       },
       valid = { message =>
         ChatRoom.post(message)
@@ -87,7 +100,7 @@ object ChatController extends Controller {
     if (errors.isEmpty) {
       Ok(Json.toJson(new ResponseForm(true)))
     } else {
-      BadRequest(Json.toString)
+      BadRequest(Json.toJson(errors))
     }
   }
 }

@@ -27,6 +27,8 @@ class ChatControllerPostTest extends PlaySpecification {
       val result = controllers.ChatController.post()(FakeRequest().withHeaders(
         (controllers.ChatController.UserTokenHeader -> "adlkahdhakhdkh")))
       status(result) must equalTo(BAD_REQUEST)
+
+      contentAsString(result) must contain("/message")
     }
 
     "'UNAUTHORIZED' if no token in the header but it has the message" in new WithApplication {
