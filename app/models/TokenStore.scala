@@ -29,7 +29,7 @@ object TokenStores {
 
   def findByUser(user : String)(implicit session: Session) = all.filter(f => f.user === user).firstOption
 
-  def findByToken(token : String) (implicit session: Session) = all.filter(_.token == token).firstOption
+  def findByToken(token : String) (implicit session: Session) = all.filter(_.token === token).firstOption
 
 
 }

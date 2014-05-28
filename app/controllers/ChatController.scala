@@ -17,6 +17,11 @@ object ChatController extends Controller with AuthHelpers {
   implicit val responseFormFormat = Json.format[ResponseForm]
 
   val UserTokenHeader = "USER_TOKEN_HEADER"
+  val TokenIdRegex = "^Bearer (.*)$".r
+
+  def TokenDatabaseFormat(token: String) = s"($token)"
+
+  def TokenHeaderFormat(token: String) = s"Bearer ($token)"
 
   def search = Action { request =>
     Ok(Json.toJson(ChatRoom.messages))
@@ -45,12 +50,12 @@ object ChatController extends Controller with AuthHelpers {
 
           dbRecords match {
             case Some(dbUser) =>
-              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> s"Bearer (${dbUser.token})"))
+              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> dbUser.token))
             case None =>
               // we don't have the user, so we create one
-              val tokenId = UUID.randomUUID().toString
+              val tokenId = TokenDatabaseFormat(UUID.randomUUID().toString)
               TokenStoreDao.save(new TokenStore(None, user, tokenId))
-              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> s"Bearer (${tokenId})"))
+              Ok(Json.toJson("user created")).withHeaders((UserTokenHeader -> tokenId))
 
           }
         case _ =>
@@ -61,14 +66,12 @@ object ChatController extends Controller with AuthHelpers {
       }
   }
 
-  def post() = Action {
-    request =>
-      val optionHeader = request.headers.get(UserTokenHeader)
-      if (!optionHeader.isDefined) {
-        Unauthorized(" invalid request, no header")
-      } else {
-        handleRequest(request)
-      }
+  def post() = AuthAction {
+    (request, token) =>
+
+      //TODO : add user to the message in db
+      handleRequest(request)
+
   }
 
 
@@ -84,10 +87,7 @@ object ChatController extends Controller with AuthHelpers {
 
     val errors = validateMessage.reads(json).fold(
       invalid = { errors =>
-
-
         errors.map(error => error._2.map(errorMessage => new ResponseFormError(error._1.path.map(_.toString).mkString(""), errorMessage.message)))
-
       },
       valid = { message =>
         ChatRoom.post(message)

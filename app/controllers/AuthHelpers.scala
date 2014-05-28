@@ -4,16 +4,13 @@ import models._
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.mvc.BodyParsers._
+import play.api.Logger
 
 /**
  * Created by Ionut Andonescu <ionut.andonescu@pure360.com>
  */
 trait AuthHelpers {
   this: Results =>
-
-
-  val TokenIdRegex = "^Bearer (.*)$".r
-
 
   def AuthAction(func: (Request[AnyContent], TokenStore) => Result): Action[AnyContent] =
     AuthAction(parse.anyContent)(func)
@@ -23,12 +20,14 @@ trait AuthHelpers {
       val optionalHeader =
         request.headers.get(ChatController.UserTokenHeader) orElse
           request.getQueryString("auth")
-
+      Logger.info(" auth header : " + optionalHeader)
       val token =
         for {
-          TokenIdRegex(id) <- optionalHeader
+          ChatController.TokenIdRegex(id) <- optionalHeader
           token <- TokenStoreDao.read(id)
         } yield token
+
+      Logger.info(" token : " + optionalHeader)
 
       token match {
         case Some(token) => func(request, token)

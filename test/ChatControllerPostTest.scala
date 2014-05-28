@@ -1,6 +1,8 @@
+import models.TokenStore
 import models.{ChatRoom, TokenStore, TokenStoreDao}
 import play.api.libs.json.Json
 import play.api.test.{FakeRequest, WithApplication, PlaySpecification}
+import controllers.ChatController._
 
 /**
  * Created by Ionut Andonescu <ionut.andonescu@pure360.com>
@@ -11,10 +13,11 @@ class ChatControllerPostTest extends PlaySpecification {
   "Chat Controller - post " should {
 
     "let the user to post a new message if it has the token in header" in new WithApplication {
-      TokenStoreDao.save(new TokenStore(None, "John", "adlkahdhakhdkh"))
+      TokenStoreDao.save(new TokenStore(None, "John", TokenDatabaseFormat("adlkahdhakhdkh")))
 
-      val result = controllers.ChatController.post()(FakeRequest().withHeaders(
-        (controllers.ChatController.UserTokenHeader -> "adlkahdhakhdkh")).withJsonBody(Json.toJson(Map("message" -> "hahaha"))))
+      val result = controllers.ChatController.post()(FakeRequest()
+        .withHeaders((controllers.ChatController.UserTokenHeader -> TokenHeaderFormat("adlkahdhakhdkh")))
+        .withJsonBody(Json.toJson(Map("message" -> "hahaha"))))
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
 
@@ -24,8 +27,11 @@ class ChatControllerPostTest extends PlaySpecification {
 
 
     "'BadRequest' if no message in the request" in new WithApplication {
-      val result = controllers.ChatController.post()(FakeRequest().withHeaders(
-        (controllers.ChatController.UserTokenHeader -> "adlkahdhakhdkh")))
+
+      TokenStoreDao.save(new TokenStore(None, "John", TokenDatabaseFormat("adlkahdhakhdkh")))
+
+      val result = controllers.ChatController.post()(FakeRequest()
+        .withHeaders((controllers.ChatController.UserTokenHeader -> TokenHeaderFormat ("adlkahdhakhdkh"))))
       status(result) must equalTo(BAD_REQUEST)
 
       contentAsString(result) must contain("/message")
@@ -33,7 +39,8 @@ class ChatControllerPostTest extends PlaySpecification {
 
     "'UNAUTHORIZED' if no token in the header but it has the message" in new WithApplication {
 
-      val result = controllers.ChatController.post()(FakeRequest().withJsonBody(Json.toJson(Map("message" -> "hahaha"))))
+      val result = controllers.ChatController.post()(FakeRequest()
+        .withJsonBody(Json.toJson(Map("message" -> "hahaha"))))
       status(result) must equalTo(UNAUTHORIZED)
     }
   }

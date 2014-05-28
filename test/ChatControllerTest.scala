@@ -1,5 +1,4 @@
 import models.{TokenStore, TokenStoreDao}
-import org.specs2.mutable.Specification
 import play.api.test.{FakeRequest, WithApplication, PlaySpecification}
 
 /**
@@ -24,7 +23,7 @@ class ChatControllerTest extends PlaySpecification {
       status(result) must equalTo(OK)
       contentType(result) must beSome("application/json")
 
-      header(controllers.ChatController.UserTokenHeader, result) must beEqualTo(Some("Bearer (adlkahdhakhdkh)"))
+      header(controllers.ChatController.UserTokenHeader, result) must beEqualTo(Some("adlkahdhakhdkh"))
     }
 
 
