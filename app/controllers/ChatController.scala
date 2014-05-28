@@ -4,9 +4,11 @@ import play.api._
 import response.ResponseForm
 import response.ResponseFormError
 import play.api.libs.json._
+import play.api.libs.json.util._
+import play.api.libs.json.Reads._
 import play.api.libs.json.JsPath
 
-import play.api.data.validation.Constraints._
+import play.api.libs.functional.syntax._
 
 import play.api.mvc._
 
@@ -77,6 +79,7 @@ object ChatController extends Controller {
 
   /**
    * http://www.playframework.com/documentation/2.1.0/ScalaJsonCombinators
+   * http://mandubian.com/2012/09/08/unveiling-play-2-dot-1-json-api-part1-jspath-reads-combinators/
    */
   val validateMessage: Reads[String] = (JsPath \ "message").read[String]
 
