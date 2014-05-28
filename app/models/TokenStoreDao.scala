@@ -8,14 +8,19 @@ import scala.slick.driver.H2Driver.simple._
 object TokenStoreDao {
 
   def findAllByUser(user: String) = database.withSession(implicit session =>
-    TokenStores.findAllByUser(user)
+    TokenStores.findByUser(user)
 
   )
 
 
-  def save(tokenStore: TokenStore) = database.withSession(implicit session =>
-    TokenStores.all += tokenStore
+  def save(tokenStore: TokenStore) = database.withSession(
+    implicit session =>
+      TokenStores.all += tokenStore
+  )
 
+  def read(token: String) = database.withSession(
+    implicit session =>
+      TokenStores.findByToken(token)
   )
 
 }

@@ -14,7 +14,7 @@ class TokenStoreSpecs extends  Specification{
 
         TokenStoreDao.save(new TokenStore(None, "John", "adlkahdhakhdkh"))
 
-        TokenStoreDao.findAllByUser("John").length mustEqual(1)
+        TokenStoreDao.findAllByUser("John").isDefined must beTrue
 
 
       } finally {

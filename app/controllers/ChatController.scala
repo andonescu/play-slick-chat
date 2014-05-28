@@ -1,22 +1,17 @@
 package controllers
 
-import play.api._
 import response.ResponseForm
 import response.ResponseFormError
 import play.api.libs.json._
-import play.api.libs.json.util._
 import play.api.libs.json.Reads._
 import play.api.libs.json.JsPath
-
-import play.api.libs.functional.syntax._
 
 import play.api.mvc._
 
 import models._
 import java.util.UUID
-import play.api.data.validation.ValidationError
 
-object ChatController extends Controller {
+object ChatController extends Controller with AuthHelpers {
   implicit val format = Json.format[Message]
   implicit val responseFormErrorFormat = Json.format[ResponseFormError]
   implicit val responseFormFormat = Json.format[ResponseForm]
@@ -49,13 +44,13 @@ object ChatController extends Controller {
           val dbRecords = TokenStoreDao.findAllByUser(user)
 
           dbRecords match {
-            case head :: _ =>
-              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> head.token))
-            case _ =>
+            case Some(dbUser) =>
+              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> s"Bearer (${dbUser.token})"))
+            case None =>
               // we don't have the user, so we create one
               val tokenId = UUID.randomUUID().toString
               TokenStoreDao.save(new TokenStore(None, user, tokenId))
-              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> tokenId))
+              Ok(Json.toJson("user exists")).withHeaders((UserTokenHeader -> s"Bearer (${tokenId})"))
 
           }
         case _ =>
@@ -89,6 +84,7 @@ object ChatController extends Controller {
 
     val errors = validateMessage.reads(json).fold(
       invalid = { errors =>
+
 
         errors.map(error => error._2.map(errorMessage => new ResponseFormError(error._1.path.map(_.toString).mkString(""), errorMessage.message)))
 

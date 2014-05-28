@@ -27,7 +27,9 @@ object TokenStores {
   lazy val all = TableQuery[TokenStores]
 
 
-  def findAllByUser(user : String)(implicit session: Session) = all.filter(f => f.user === user).list()
+  def findByUser(user : String)(implicit session: Session) = all.filter(f => f.user === user).firstOption
+
+  def findByToken(token : String) (implicit session: Session) = all.filter(_.token == token).firstOption
 
 
 }
