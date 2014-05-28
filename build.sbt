@@ -10,3 +10,5 @@ libraryDependencies ++= Seq(
 )
 
 playScalaSettings
+
+parallelExecution in Test := false

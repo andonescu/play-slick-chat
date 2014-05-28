@@ -13,8 +13,10 @@ object Global extends GlobalSettings {
     models.ChatRoom.createTables
   }
 
-  override def onStop(app: Application) =
+  override def onStop(app: Application) = {
     Logger.info("Application shutdown...")
+    models.ChatRoom.dropTables
+  }
 
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
     Logger.info(request.method + " " + request.uri)

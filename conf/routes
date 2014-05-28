@@ -1,2 +1,4 @@
 GET  /chat controllers.ChatController.search()
 POST /chat controllers.ChatController.create()
+GET  /chat/login controllers.ChatController.login(username: Option[String])
+POST /chat/post controllers.ChatController.post()
